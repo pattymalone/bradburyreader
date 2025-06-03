@@ -1,16 +1,29 @@
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
 
 export default function Artwork() {
+  const [artwork, setArtwork] = useState(null);
+
+  useEffect(() => {
+    fetch('/api/artwork')
+      .then(res => res.json())
+      .then(data => setArtwork(data))
+      .catch(console.error);
+  }, []);
+
+  if (!artwork) return <p>Loading artwork...</p>;
+
   return (
     <section>
       <h2>Artwork of the Day</h2>
       <Image
-        src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/76/Vincent_van_Gogh_-_Wheat_Field_with_Cypresses_-_Google_Art_Project.jpg/800px-Vincent_van_Gogh_-_Wheat_Field_with_Cypresses_-_Google_Art_Project.jpg"
-        alt="Wheat Field with Cypresses by Vincent van Gogh"
+        src={artwork.imageUrl}
+        alt={artwork.title}
         width={800}
         height={600}
+        style={{ maxWidth: '100%', height: 'auto' }}
       />
-      <p><em>Wheat Field with Cypresses</em> by Vincent van Gogh</p>
+      <p><em>{artwork.title}</em> by {artwork.artist}</p>
     </section>
   );
 }
