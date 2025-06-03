@@ -2,8 +2,8 @@ import { NextResponse } from 'next/server';
 
 export async function GET() {
   return NextResponse.json({
-    title: "Wheat Field with Cypresses",
+    title: "The Starry Night",
     artist: "Vincent van Gogh",
-    imageUrl: "https://upload.wikimedia.org/wikipedia/commons/7/76/Vincent_van_Gogh_-_Wheat_Field_with_Cypresses_-_Google_Art_Project.jpg"
+    imageUrl: "https://upload.wikimedia.org/wikipedia/commons/e/ea/Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg"
   });
 }
