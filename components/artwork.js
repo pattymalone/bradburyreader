@@ -1,3 +1,4 @@
+// components/Artwork.js
 import { useEffect, useState } from 'react';
 
 export default function Artwork() {
@@ -24,3 +25,4 @@ export default function Artwork() {
     </section>
   );
 }
+
