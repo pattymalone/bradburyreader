@@ -1,4 +1,5 @@
 'use client'
+
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 
@@ -7,67 +8,105 @@ type News = { title: string; source: string; url: string }
 type Song = { title: string; artist: string; url: string }
 type Artwork = { title: string; artist: string; imageUrl: string }
 
+type ContentBlock =
+  | { type: 'poem'; data: Poem }
+  | { type: 'news'; data: News }
+  | { type: 'song'; data: Song }
+  | { type: 'artwork'; data: Artwork }
+
 export default function Home() {
-  const [poem, setPoem] = useState<Poem | null>(null)
-  const [news, setNews] = useState<News | null>(null)
-  const [song, setSong] = useState<Song | null>(null)
-  const [artwork, setArtwork] = useState<Artwork | null>(null)
+  const [index, setIndex] = useState(0)
+  const [content, setContent] = useState<ContentBlock[]>([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch('/api/poem').then(res => res.json()).then(setPoem)
-    fetch('/api/news').then(res => res.json()).then(setNews)
-    fetch('/api/song').then(res => res.json()).then(setSong)
-    fetch('/api/artwork').then(res => res.json()).then(setArtwork)
+    async function fetchData() {
+      setLoading(true)
+      const [poem, news, song, artwork] = await Promise.all([
+        fetch('/api/poem').then(res => res.json()),
+        fetch('/api/news').then(res => res.json()),
+        fetch('/api/song').then(res => res.json()),
+        fetch('/api/artwork').then(res => res.json()),
+      ])
+      setContent([
+        { type: 'poem', data: poem },
+        { type: 'news', data: news },
+        { type: 'song', data: song },
+        { type: 'artwork', data: artwork },
+      ])
+      setLoading(false)
+    }
+    fetchData()
   }, [])
 
-  const stack = [
-    poem && (
-      <motion.div key="poem" className="p-4 text-center bg-white rounded-2xl shadow-lg">
-        <h2 className="text-xl font-semibold">{poem.title}</h2>
-        <p className="text-sm text-gray-500 mb-2">by {poem.author}</p>
-        <pre className="whitespace-pre-wrap">{poem.lines.join('\n')}</pre>
-      </motion.div>
-    ),
-    news && (
-      <motion.div key="news" className="p-4 bg-blue-50 rounded-2xl shadow-lg">
-        <h2 className="text-lg font-bold">📰 {news.title}</h2>
-        <p className="text-sm">{news.source}</p>
-        <a className="text-blue-600 underline" href={news.url} target="_blank">Read more</a>
-      </motion.div>
-    ),
-    song && (
-      <motion.div key="song" className="p-4 bg-green-50 rounded-2xl shadow-lg">
-        <h2 className="text-lg font-bold">🎵 {song.title}</h2>
-        <p>{song.artist}</p>
-        <a className="text-blue-600 underline" href={song.url} target="_blank">Listen</a>
-      </motion.div>
-    ),
-    artwork && (
-      <motion.div key="artwork" className="p-4 bg-yellow-50 rounded-2xl shadow-lg text-center">
-        <img src={artwork.imageUrl} alt={artwork.title} className="w-full rounded-xl mb-2" />
-        <h2 className="font-semibold">{artwork.title}</h2>
-        <p className="text-sm">{artwork.artist}</p>
-      </motion.div>
-    )
-  ].filter(Boolean)
+  function handleSwipe() {
+    setIndex((prev) => (prev + 1) % content.length)
+  }
+
+  function renderBlock(block: ContentBlock) {
+    switch (block.type) {
+      case 'poem':
+        return (
+          <div className="p-4 text-center">
+            <h2 className="text-xl font-semibold mb-2">{block.data.title}</h2>
+            <p className="italic mb-2">by {block.data.author}</p>
+            <pre className="whitespace-pre-wrap">{block.data.lines.join('\n')}</pre>
+          </div>
+        )
+      case 'news':
+        return (
+          <div className="p-4 text-center">
+            <h2 className="text-xl font-semibold mb-2">{block.data.title}</h2>
+            <p className="mb-2">Source: {block.data.source}</p>
+            <a href={block.data.url} className="text-blue-600 underline" target="_blank">Read more</a>
+          </div>
+        )
+      case 'song':
+        return (
+          <div className="p-4 text-center">
+            <h2 className="text-xl font-semibold mb-2">{block.data.title}</h2>
+            <p className="mb-2">by {block.data.artist}</p>
+            <a href={block.data.url} className="text-green-600 underline" target="_blank">Listen</a>
+          </div>
+        )
+      case 'artwork':
+        return (
+          <div className="p-4 text-center">
+            <h2 className="text-xl font-semibold mb-2">{block.data.title}</h2>
+            <p className="mb-2">by {block.data.artist}</p>
+            <img src={block.data.imageUrl} alt={block.data.title} className="mx-auto max-h-[400px] object-contain" />
+          </div>
+        )
+      default:
+        return null
+    }
+  }
 
   return (
-    <main className="flex flex-col items-center justify-center min-h-screen bg-neutral-100 p-6 space-y-6 overflow-y-scroll">
-      <h1 className="text-2xl font-bold mb-4">Welcome to Bradbury</h1>
-      <AnimatePresence>
-        {stack.map((content, i) => (
-          <motion.div
-            key={i}
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
-            transition={{ delay: i * 0.1 }}
-            className="w-full max-w-md"
-          >
-            {content}
-          </motion.div>
-        ))}
-      </AnimatePresence>
-    </main>
+    <div className="h-screen w-full flex items-center justify-center bg-[#f4f1ee] text-[#222] font-serif">
+      {loading ? (
+        <p className="text-xl">Loading Bradbury’s daily curation…</p>
+      ) : (
+        <div
+          className="w-full h-full overflow-hidden"
+          onClick={handleSwipe}
+        >
+          <AnimatePresence initial={false}>
+            <motion.div
+              key={index}
+              initial={{ y: 100, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: -100, opacity: 0 }}
+              transition={{ duration: 0.5 }}
+              className="w-full h-full flex flex-col justify-center items-center"
+            >
+              {renderBlock(content[index])}
+              <p className="mt-4 text-sm text-gray-500">(tap anywhere to continue)</p>
+            </motion.div>
+          </AnimatePresence>
+        </div>
+      )}
+    </div>
   )
 }
+
