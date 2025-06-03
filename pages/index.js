@@ -1,7 +1,7 @@
-import Poem from '../components/Poem';
-import News from '../components/News';
-import Song from '../components/Song';
-import Artwork from '../components/Artwork';
+import Poem from '../components/poem';
+import News from '../components/news';
+import Song from '../components/song';
+import Artwork from '../components/artwork';
 
 export default function Home() {
   return (
