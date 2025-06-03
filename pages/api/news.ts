@@ -1,11 +1,10 @@
-import { NextResponse } from 'next/server'
+import type { NextApiRequest, NextApiResponse } from 'next';
 
-export async function GET() {
-  const story = {
-    title: "What Happens to America's Wild Horses?",
-    source: "NPR",
-    url: "https://www.npr.org/2024/05/10/wild-horses-investigation"
-  }
-
-  return NextResponse.json(story)
+export default function handler(req: NextApiRequest, res: NextApiResponse) {
+  res.status(200).json({
+    title: "AI Policy Is Rapidly Evolving",
+    source: "OpenAI Daily",
+    url: "https://openai.com/blog"
+  });
 }
+
