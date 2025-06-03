@@ -1,4 +1,3 @@
-// app/api/artwork/route.js
 import { NextResponse } from 'next/server';
 
 export async function GET() {
@@ -8,3 +7,4 @@ export async function GET() {
     imageUrl: "https://upload.wikimedia.org/wikipedia/commons/e/ea/Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg"
   });
 }
+
