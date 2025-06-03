@@ -1,28 +1,28 @@
-import { useEffect, useState } from 'react';
+import { NextResponse } from 'next/server';
 
-export default function Artwork() {
-  const [artwork, setArtwork] = useState(null);
+export async function GET() {
+  // Use a reliable static object ID from The Met's public API
+  const objectID = 436121; // Example: Van Gogh, "Irises"
 
-  useEffect(() => {
-    fetch('/api/artwork')
-      .then((res) => res.json())
-      .then((data) => setArtwork(data))
-      .catch(console.error);
-  }, []);
+  try {
+    const res = await fetch(`https://collectionapi.metmuseum.org/public/collection/v1/objects/${objectID}`);
+    if (!res.ok) {
+      throw new Error('Failed to fetch artwork');
+    }
+    const data = await res.json();
 
-  if (!artwork) return <p>Loading artwork...</p>;
-
-  return (
-    <section>
-      <h2>Artwork of the Day</h2>
-      <img
-        src={artwork.imageUrl}
-        alt={artwork.title}
-        style={{ width: '100%', maxWidth: '600px', height: 'auto', borderRadius: '12px' }}
-      />
-      <p>
-        <em>{artwork.title}</em> by {artwork.artist}
-      </p>
-    </section>
-  );
+    // Return a clean JSON object with key details and a valid image URL
+    return NextResponse.json({
+      title: data.title || "Unknown Title",
+      artist: data.artistDisplayName || "Unknown Artist",
+      imageUrl: data.primaryImageSmall || "", // This is a small image URL, works well for web
+    });
+  } catch (error) {
+    // Return fallback JSON in case of error to avoid crashing front-end
+    return NextResponse.json({
+      title: "Artwork not available",
+      artist: "",
+      imageUrl: "",
+    });
+  }
 }
